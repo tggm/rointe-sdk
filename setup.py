@@ -12,7 +12,7 @@ with open("README.md", encoding="utf-8") as fh:
 # This call to setup() does all the work
 setup(
     name="rointe-sdk",
-    version="1.0.0",
+    version="0.0.1",
     description="Python SDK for rointeconnect.com",
     long_description=doc_long_description,
     long_description_content_type="text/markdown",
