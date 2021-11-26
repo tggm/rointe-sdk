@@ -66,7 +66,8 @@ class RointeDevice:
         """Initialize the device from the rointe's json blob."""
         self.id = device_id
         self.type = device_info["data"]["type"]
-        self.product_version = str.lower(device_info["data"]["product_version"])
+        self.product_version = str.lower(
+            device_info["data"]["product_version"])
         self.serialnumber = device_info["serialnumber"]
 
         self.update_data(device_info)
