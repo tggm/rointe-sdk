@@ -26,7 +26,10 @@ ApiResponse = namedtuple("ApiResponse", ["success", "data", "error_message"])
 
 
 class RointeAPI:
+    """Rointe API"""
+
     def __init__(self, username: str, password: str):
+        """Initializes the API"""
 
         self.username = username
         self.password = password
@@ -38,15 +41,15 @@ class RointeAPI:
         self._initialize_authentication()
 
     def _initialize_authentication(self) -> None:
-        """Initializes the refresh token and cleans
-            the original credentials."""
+        """
+        Initializes the refresh token and cleans
+        the original credentials.
+        """
 
         login_data = self.login_user(self.username, self.password)
 
         if not login_data.success:
-            _LOGGER.error(
-                "Unable to authenticate user: %s",
-                login_data.error_message)
+            _LOGGER.error("Unable to authenticate user: %s", login_data.error_message)
 
             self.auth_token = None
             self.refresh_token = None

@@ -1,3 +1,5 @@
+"""Configuration constants"""
+
 AUTH_HOST = "https://www.googleapis.com"
 AUTH_VERIFY_URL = "/identitytoolkit/v3/relyingparty/verifyPassword"
 AUTH_ACCT_INFO_URL = "/identitytoolkit/v3/relyingparty/getAccountInfo"
