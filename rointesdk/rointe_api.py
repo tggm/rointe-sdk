@@ -38,7 +38,7 @@ class RointeAPI:
         self.auth_token = None
         self.auth_token_expire_date = None
 
-    def initialize_authentication(self) -> None:
+    def initialize_authentication(self) -> str:
         """
         Initializes the refresh token and cleans
         the original credentials.
@@ -51,13 +51,15 @@ class RointeAPI:
 
             self.auth_token = None
             self.refresh_token = None
-            return
+            return login_data.error_message
 
         self.auth_token = login_data.data["auth_token"]
         self.refresh_token = login_data.data["refresh_token"]
         self.auth_token_expire_date = login_data.data["expires"]
 
         self._clean_credentials()
+
+        return None
 
     def _clean_credentials(self):
         """Cleans authentication values"""
@@ -126,26 +128,37 @@ class RointeAPI:
             "returnSecureToken": True,
         }
 
-        response = requests.post(
-            f"{AUTH_HOST}{AUTH_VERIFY_URL}?key={FIREBASE_APP_KEY}",
-            data=payload,
-            timeout=AUTH_TIMEOUT_SECONDS,
-        )
+        try:
+            response = requests.post(
+                f"{AUTH_HOST}{AUTH_VERIFY_URL}?key={FIREBASE_APP_KEY}",
+                data=payload,
+                timeout=AUTH_TIMEOUT_SECONDS,
+            )
+        except requests.exceptions.RequestException as rex:
+            _LOGGER.exception("Login request error", rex)
+            return ApiResponse(False, None, "cannot_connect")
 
-        if not response:
-            return ApiResponse(False, None, "No response while authenticating")
-
-        if response.status_code != 200:
+        if response.status_code == 400:
             return ApiResponse(
                 False,
                 None,
-                f"Invalid response code {response.status_code} while authenticating",
+                "invalid_auth",
+            )
+
+        if response.status_code != 200:
+            _LOGGER.error(
+                f"Invalid response code {response.status_code} while authenticating"
+            )
+            return ApiResponse(
+                False,
+                None,
+                "response_invalid",
             )
 
         response_json = response.json()
 
         if not response_json or "idToken" not in response_json:
-            return ApiResponse(False, None, "API Error while logging in")
+            return ApiResponse(False, None, "invalid_auth_response")
 
         data = {
             "auth_token": response_json["idToken"],
