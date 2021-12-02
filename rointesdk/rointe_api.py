@@ -38,15 +38,13 @@ class RointeAPI:
         self.auth_token = None
         self.auth_token_expire_date = None
 
-        self._initialize_authentication()
-
-    def _initialize_authentication(self) -> None:
+    def initialize_authentication(self) -> None:
         """
         Initializes the refresh token and cleans
         the original credentials.
         """
 
-        login_data = self.login_user(self.username, self.password)
+        login_data = self._login_user()
 
         if not login_data.success:
             _LOGGER.error("Unable to authenticate user: %s", login_data.error_message)
@@ -65,6 +63,10 @@ class RointeAPI:
         """Cleans authentication values"""
         self.username = None
         self.password = None
+
+    def is_logged_in(self) -> bool:
+        """Check if the login was successful."""
+        return self.auth_token is not None and self.refresh_token is not None
 
     def _ensure_valid_auth(self) -> bool:
         """Ensure there is a valid authentication token present."""
@@ -115,10 +117,14 @@ class RointeAPI:
 
         return True
 
-    def login_user(self, username: str, password: str) -> ApiResponse:
+    def _login_user(self) -> ApiResponse:
         """Log the user in."""
 
-        payload = {"email": username, "password": password, "returnSecureToken": True}
+        payload = {
+            "email": self.username,
+            "password": self.password,
+            "returnSecureToken": True,
+        }
 
         response = requests.post(
             f"{AUTH_HOST}{AUTH_VERIFY_URL}?key={FIREBASE_APP_KEY}",
@@ -150,13 +156,13 @@ class RointeAPI:
 
         return ApiResponse(True, data, None)
 
-    def get_local_id(self, auth_token: str) -> ApiResponse:
+    def get_local_id(self) -> ApiResponse:
         """Retrieve user local_id value."""
 
-        if not auth_token:
-            return ApiResponse(False, None, "Authentication not present")
+        if not self._ensure_valid_auth():
+            return ApiResponse(False, None, "Invalid authentication.")
 
-        payload = {"idToken": auth_token}
+        payload = {"idToken": self.auth_token}
 
         response = requests.post(
             f"{AUTH_HOST}{AUTH_ACCT_INFO_URL}?key={FIREBASE_APP_KEY}",
@@ -178,11 +184,18 @@ class RointeAPI:
         return ApiResponse(True, response_json["users"][0]["localId"], None)
 
     def get_installation_by_id(
-        self, installation_id: str, local_id: str, auth_token: str
+        self, installation_id: str, local_id: str
     ) -> ApiResponse:
         """Retrieve a specific installation by ID."""
 
-        args = {"auth": auth_token, "orderBy": '"userid"', "equalTo": f'"{local_id}"'}
+        if not self._ensure_valid_auth():
+            return ApiResponse(False, None, "Invalid authentication.")
+
+        args = {
+            "auth": self.auth_token,
+            "orderBy": '"userid"',
+            "equalTo": f'"{local_id}"',
+        }
 
         url = f"{FIREBASE_DEFAULT_URL}{FIREBASE_INSTALLATIONS_PATH}"
 
@@ -205,10 +218,17 @@ class RointeAPI:
 
         return ApiResponse(True, reponse_json[installation_id], None)
 
-    def get_installations(self, local_id: str, auth_token: str) -> ApiResponse:
+    def get_installations(self, local_id: str) -> ApiResponse:
         """Retrieve the client's installations."""
 
-        args = {"auth": auth_token, "orderBy": '"userid"', "equalTo": f'"{local_id}"'}
+        if not self._ensure_valid_auth():
+            return ApiResponse(False, None, "Invalid authentication.")
+
+        args = {
+            "auth": self.auth_token,
+            "orderBy": '"userid"',
+            "equalTo": f'"{local_id}"',
+        }
         url = f"{FIREBASE_DEFAULT_URL}{FIREBASE_INSTALLATIONS_PATH}"
 
         response = requests.get(url, params=args)
@@ -233,10 +253,13 @@ class RointeAPI:
 
         return ApiResponse(True, installations, None)
 
-    def get_device(device_id: str, auth_token: str) -> ApiResponse:
+    def get_device(self, device_id: str) -> ApiResponse:
         """Retrieve device data."""
 
-        args = {"auth": auth_token}
+        if not self._ensure_valid_auth():
+            return ApiResponse(False, None, "Invalid authentication.")
+
+        args = {"auth": self.auth_token}
 
         response = requests.get(
             "{}{}".format(
@@ -255,13 +278,14 @@ class RointeAPI:
 
         return ApiResponse(True, response.json(), None)
 
-    def set_device_temp(
-        self, device: RointeDevice, auth_token: str, new_temp: float
-    ) -> bool:
+    def set_device_temp(self, device: RointeDevice, new_temp: float) -> bool:
         """Set the device target temperature."""
 
+        if not self._ensure_valid_auth():
+            return ApiResponse(False, None, "Invalid authentication.")
+
         device_id = device.id
-        args = {"auth": auth_token}
+        args = {"auth": self.auth_token}
         body = {"temp": new_temp, "mode": "manual"}
 
         url = "{}{}".format(
@@ -270,13 +294,14 @@ class RointeAPI:
 
         return self._send_patch_request(device_id, url, args, body)
 
-    def set_device_preset(
-        self, device: RointeDevice, auth_token: str, preset_mode: str
-    ) -> bool:
+    def set_device_preset(self, device: RointeDevice, preset_mode: str) -> bool:
         """Set the preset."""
 
+        if not self._ensure_valid_auth():
+            return ApiResponse(False, None, "Invalid authentication.")
+
         device_id = device.id
-        args = {"auth": auth_token}
+        args = {"auth": self.auth_token}
         body: Dict[str, Any] = {}
 
         url = "{}{}".format(
