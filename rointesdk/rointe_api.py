@@ -4,7 +4,7 @@ import logging
 from typing import Any, Dict, Optional
 import requests
 from collections import namedtuple
-from datetime import datetime, time, timedelta
+from datetime import datetime, timedelta
 from rointesdk.device import RointeDevice, ScheduleMode
 
 from rointesdk.settings import (
@@ -307,7 +307,7 @@ class RointeAPI:
 
         return self._send_patch_request(device_id, url, args, body)
 
-    def set_device_preset(self, device: RointeDevice, preset_mode: str) -> bool:
+    def set_device_preset(self, device: RointeDevice, preset_mode: str) -> ApiResponse:
         """Set the preset."""
 
         if not self._ensure_valid_auth():
@@ -321,15 +321,65 @@ class RointeAPI:
             FIREBASE_DEFAULT_URL, FIREBASE_DEVICE_DATA_PATH_BY_ID.format(device_id)
         )
 
-        if preset_mode == "off":
+        if preset_mode == "comfort":
+            body = {
+                "power": True,
+                "mode": "manual",
+                "temp": device.comfort_temp,
+                "status": "comfort",
+            }
+            return self._send_patch_request(device_id, url, args, body)
+        elif preset_mode == "eco":
+            body = {
+                "power": True,
+                "mode": "manual",
+                "temp": device.eco_temp,
+                "status": "eco",
+            }
+            return self._send_patch_request(device_id, url, args, body)
+        elif preset_mode == "Anti-frost":
+            body = {
+                "power": True,
+                "mode": "manual",
+                "temp": device.ice_temp,
+                "status": "ice",
+            }
+            return self._send_patch_request(device_id, url, args, body)
+        elif preset_mode == "none":
+            body = {
+                "power": False,
+                "mode": "manual",
+                "temp": 20,
+                "status": "none",
+            }
+            return self._send_patch_request(device_id, url, args, body)
+        else:
+            _LOGGER.error("Invalid preset mode: %s", preset_mode)
+            return ApiResponse(False, None, None)
+
+    def set_device_mode(self, device: RointeDevice, hvac_mode: str) -> ApiResponse:
+        """Set the HVAC mode."""
+
+        if not self._ensure_valid_auth():
+            return ApiResponse(False, None, "Invalid authentication.")
+
+        device_id = device.id
+        args = {"auth": self.auth_token}
+        body: Dict[str, Any] = {}
+
+        url = "{}{}".format(
+            FIREBASE_DEFAULT_URL, FIREBASE_DEVICE_DATA_PATH_BY_ID.format(device_id)
+        )
+
+        if hvac_mode == "off":
             body = {"power": False, "mode": "manual"}
             return self._send_patch_request(device_id, url, args, body)
 
-        elif preset_mode == "heat":
+        elif hvac_mode == "heat":
             body = {"mode": "manual", "power": True, "status": "none"}
             return self._send_patch_request(device_id, url, args, body)
 
-        elif preset_mode == "auto":
+        elif hvac_mode == "auto":
             current_mode: ScheduleMode = device.get_current_schedule_mode()
 
             # For reasons unknown when changing modes we need to send the proper
@@ -350,10 +400,10 @@ class RointeAPI:
                 device_id, url, args, {"mode": "auto", "power": True}
             )
 
-            return request_power_status and request_mode_status
+            return ApiResponse(request_power_status and request_mode_status, None, None)
 
         else:
-            _LOGGER.error("Invalid HVAC_MODE: %s", preset_mode)
+            _LOGGER.error("Invalid HVAC_MODE: %s", hvac_mode)
             return False
 
     def _send_patch_request(
@@ -362,12 +412,10 @@ class RointeAPI:
         url: str,
         params: Optional[Dict[str, Any]] = None,
         body=None,
-    ) -> bool:
+    ) -> ApiResponse:
         """Send a patch request."""
 
-        body["last_sync_datetime_app"] = round(time.time() * 1000)
-
-        _LOGGER.debug("Sending patch request body: %s", body)
+        body["last_sync_datetime_app"] = round(datetime.now().timestamp() * 1000)
 
         response = requests.patch(
             url,
@@ -382,7 +430,7 @@ class RointeAPI:
                 str(body),
                 device_id,
             )
-            return False
+            return ApiResponse(False, None, None)
 
         if response.status_code != 200:
             _LOGGER.error(
@@ -392,6 +440,6 @@ class RointeAPI:
                 str(body),
                 device_id,
             )
-            return False
+            return ApiResponse(False, None, None)
 
-        return True
+        return ApiResponse(True, None, None)
