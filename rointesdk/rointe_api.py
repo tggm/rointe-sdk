@@ -125,7 +125,7 @@ class RointeAPI:
                 data=payload,
                 timeout=AUTH_TIMEOUT_SECONDS,
             )
-        except requests.exceptions.RequestException as rex:
+        except requests.exceptions.RequestException:
             return ApiResponse(False, None, "cannot_connect")
 
         if response.status_code == 400:
