@@ -52,9 +52,9 @@ class RointeAPI:
             self.refresh_token = None
             return
 
-        self.auth_token = login_data["auth_token"]
-        self.refresh_token = login_data["refresh_token"]
-        self.auth_token_expire_date = login_data["expires"]
+        self.auth_token = login_data.data["auth_token"]
+        self.refresh_token = login_data.data["refresh_token"]
+        self.auth_token_expire_date = login_data.data["expires"]
 
         self._clean_credentials()
 
@@ -142,7 +142,7 @@ class RointeAPI:
             "auth_token": response_json["idToken"],
             "expires": datetime.now()
             + timedelta(seconds=int(response_json["expiresIn"])),
-            "refresh_token": response_json["refresh_token"],
+            "refresh_token": response_json["refreshToken"],
         }
 
         return ApiResponse(True, data, None)
