@@ -1,3 +1,4 @@
+"""Utility methods"""
 import datetime as dt
 
 DEFAULT_TIME_ZONE: dt.tzinfo = dt.timezone.utc
