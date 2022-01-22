@@ -358,25 +358,26 @@ class RointeAPI:
         )
 
         if hvac_mode == "off":
-            # When turning the device off, we need to set the temperature first.
-            set_temp_response = self._send_patch_request(
-                url, args, {"temp": 20}
-            )
+            # This depends if the device is in Auto or Manual modes.
+            if device.mode == "auto":
+                body = {"power": False, "mode": "auto", "status": "off"}
+                return self._send_patch_request(url, args, body)
+            else:
+                # When turning the device off, we need to set the temperature first.
+                set_mode_response = self._send_patch_request(url, args, {"temp": 20})
 
-            if not set_temp_response.success:
-                return set_temp_response
+                if not set_mode_response.success:
+                    return set_mode_response
 
-            # Then we can turn the device off.
-            body = {"power": False, "mode": "manual", "status": "off"}
-            return self._send_patch_request(url, args, body)
+                # Then we can turn the device off.
+                body = {"power": False, "mode": "manual", "status": "off"}
+                return self._send_patch_request(url, args, body)
 
         elif hvac_mode == "heat":
-            set_temp_response = self._send_patch_request(
-                url, args, {"temp": 20}
-            )
+            set_mode_response = self._send_patch_request(url, args, {"temp": 20})
 
-            if not set_temp_response.success:
-                return set_temp_response
+            if not set_mode_response.success:
+                return set_mode_response
 
             body = {"mode": "manual", "power": True, "status": "none"}
             return self._send_patch_request(url, args, body)
@@ -395,10 +396,10 @@ class RointeAPI:
             else:
                 body = {"temp": 20}
 
-            set_temp_response = self._send_patch_request(url, args, body)
+            set_mode_response = self._send_patch_request(url, args, body)
 
-            if not set_temp_response.success:
-                return set_temp_response
+            if not set_mode_response.success:
+                return set_mode_response
 
             # and then set AUTO mode.
             request_mode_status = self._send_patch_request(
@@ -407,7 +408,7 @@ class RointeAPI:
 
             return request_mode_status
         else:
-            return ApiResponse(False, None, None)
+            return ApiResponse(False, None, f"Invalid HVAC Mode {hvac_mode}.")
 
     def _send_patch_request(
         self,
@@ -424,6 +425,9 @@ class RointeAPI:
             params=params,
             json=body,
         )
+
+        print("Request: " + str(body))
+        print("Response: " + str(response))
 
         if not response:
             return ApiResponse(False, None, None)
