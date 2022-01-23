@@ -278,6 +278,10 @@ class RointeAPI:
 
         return ApiResponse(True, response.json(), None)
 
+    def get_latest_energy_stats(self, device_id: str) -> ApiResponse:
+        # URL: https://elife-prod.firebaseio.com/history_statistics/device_id/daily/2022/01/23/energy/.json
+        pass
+
     def set_device_temp(self, device: RointeDevice, new_temp: float) -> bool:
         """Set the device target temperature."""
 
@@ -286,7 +290,7 @@ class RointeAPI:
 
         device_id = device.id
         args = {"auth": self.auth_token}
-        body = {"temp": new_temp, "mode": "manual"}
+        body = {"temp": new_temp, "mode": "manual", "power": True}
 
         url = "{}{}".format(
             FIREBASE_DEFAULT_URL, FIREBASE_DEVICE_DATA_PATH_BY_ID.format(device_id)
@@ -315,7 +319,7 @@ class RointeAPI:
                 "temp": device.comfort_temp,
                 "status": "comfort",
             }
-            return self._send_patch_request(url, args, body)
+
         elif preset_mode == "eco":
             body = {
                 "power": True,
@@ -323,7 +327,6 @@ class RointeAPI:
                 "temp": device.eco_temp,
                 "status": "eco",
             }
-            return self._send_patch_request(url, args, body)
         elif preset_mode == "Anti-frost":
             body = {
                 "power": True,
@@ -331,17 +334,8 @@ class RointeAPI:
                 "temp": device.ice_temp,
                 "status": "ice",
             }
-            return self._send_patch_request(url, args, body)
-        elif preset_mode == "none":
-            body = {
-                "power": False,
-                "mode": "manual",
-                "temp": 20,
-                "status": "none",
-            }
-            return self._send_patch_request(url, args, body)
-        else:
-            return ApiResponse(False, None, None)
+
+        return self._send_patch_request(url, args, body)
 
     def set_device_mode(self, device: RointeDevice, hvac_mode: str) -> ApiResponse:
         """Set the HVAC mode."""
@@ -425,9 +419,6 @@ class RointeAPI:
             params=params,
             json=body,
         )
-
-        print("Request: " + str(body))
-        print("Response: " + str(response))
 
         if not response:
             return ApiResponse(False, None, None)
