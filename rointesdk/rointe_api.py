@@ -352,7 +352,7 @@ class RointeAPI:
 
         return ApiResponse(True, data, None)
 
-    def set_device_temp(self, device: RointeDevice, new_temp: float) -> bool:
+    def set_device_temp(self, device: RointeDevice, new_temp: float) -> ApiResponse:
         """Set the device target temperature."""
 
         if not self._ensure_valid_auth():
