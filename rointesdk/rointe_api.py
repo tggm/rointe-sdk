@@ -102,12 +102,12 @@ class RointeAPI:
 
         response_json = response.json()
 
-        if not response_json or "idToken" not in response_json:
+        if not response_json or "id_token" not in response_json:
             return False
 
-        self.auth_token = response_json["idToken"]
+        self.auth_token = response_json["id_token"]
         self.auth_token_expire_date = datetime.now() + timedelta(
-            seconds=int(response_json["expiresIn"])
+            seconds=int(response_json["expires_in"])
         )
         self.refresh_token = response_json["refresh_token"]
 
@@ -438,7 +438,7 @@ class RointeAPI:
                 return self._send_patch_request(url, args, body)
 
         elif hvac_mode == "heat":
-            set_mode_response = self._send_patch_request(url, args, {"temp": 20})
+            set_mode_response = self._send_patch_request(url, args, {"temp": device.comfort_temp})
 
             if not set_mode_response.success:
                 return set_mode_response

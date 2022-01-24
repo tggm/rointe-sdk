@@ -1,4 +1,13 @@
 # rointe-sdk
-Rointeconnect SDK for the Rointe HomeAssistant integration.
 
-This is a python lib to encapsulate the communication with the RointeConnect API's.
+Rointeconnect SDK is a python library for the Rointe HomeAssistant integration.
+
+## Changelog
+
+- v1.0.8
+
+  - When setting hvac mode to auto, set the temperature to Comfort.
+  - Fix authentication refresh issue.
+
+- v1.0.7
+  - Minor fix.
