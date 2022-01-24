@@ -5,7 +5,8 @@ from __future__ import annotations
 from datetime import datetime
 from enum import Enum
 
-from rointesdk import utils
+from . import utils
+from .dto import EnergyConsumptionData
 
 
 class DeviceMode(Enum):
@@ -59,19 +60,25 @@ class RointeDevice:
     schedule_day: int
     schedule_hour: int
 
+    energy_data: EnergyConsumptionData
+
     last_sync_datetime_app: datetime
     last_sync_datetime_device: datetime
 
-    def __init__(self, device_id: str, device_info: dict) -> None:
+    def __init__(
+        self, device_id: str, device_info: dict, energy_data: EnergyConsumptionData
+    ) -> None:
         """Initialize the device from the rointe's json blob."""
         self.id = device_id
         self.type = device_info["data"]["type"]
         self.product_version = str.lower(device_info["data"]["product_version"])
         self.serialnumber = device_info["serialnumber"]
 
-        self.update_data(device_info)
+        self.update_data(device_info, energy_data)
 
-    def update_data(self, device_info: dict) -> None:
+    def update_data(
+        self, device_info: dict, energy_data: EnergyConsumptionData
+    ) -> None:
         """Update the device data from a Json object."""
 
         data = device_info["data"]
@@ -102,6 +109,8 @@ class RointeDevice:
         self.schedule = data["schedule"]
         self.schedule_day = data["schedule_day"]
         self.schedule_hour = data["schedule_hour"]
+
+        self.energy_data = energy_data
 
         self.last_sync_datetime_app = datetime.fromtimestamp(
             int(data["last_sync_datetime_app"]) / 1000.0

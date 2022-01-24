@@ -6,17 +6,20 @@ import requests
 from typing import Any, Dict, Optional
 from collections import namedtuple
 from datetime import datetime, timedelta
-from rointesdk.device import RointeDevice, ScheduleMode
+from .device import RointeDevice, ScheduleMode
+from .dto import EnergyConsumptionData
 
-from rointesdk.settings import (
+from .settings import (
     AUTH_ACCT_INFO_URL,
     AUTH_HOST,
     AUTH_REFRESH_ENDPOINT,
     AUTH_TIMEOUT_SECONDS,
     AUTH_VERIFY_URL,
+    ENERGY_STATS_MAX_TRIES,
     FIREBASE_APP_KEY,
     FIREBASE_DEFAULT_URL,
     FIREBASE_DEVICE_DATA_PATH_BY_ID,
+    FIREBASE_DEVICE_ENERGY_PATH_BY_ID,
     FIREBASE_DEVICES_PATH_BY_ID,
     FIREBASE_INSTALLATIONS_PATH,
 )
@@ -279,8 +282,75 @@ class RointeAPI:
         return ApiResponse(True, response.json(), None)
 
     def get_latest_energy_stats(self, device_id: str) -> ApiResponse:
-        # URL: https://elife-prod.firebaseio.com/history_statistics/device_id/daily/2022/01/23/energy/.json
-        pass
+        """Retrieve the latest energy consumption values."""
+
+        result: EnergyConsumptionData
+        now = datetime.now()
+
+        # Attempt to retrieve the latest value. If not found, go back one hour. Max 5 tries.
+        attempts = ENERGY_STATS_MAX_TRIES
+        target_date = now.replace(
+            minute=0, second=0, microsecond=0
+        )  # Strip minutes, seconds and microseconds.
+
+        while attempts > 0:
+            result: ApiResponse = self._retrieve_hour_energy_stats(
+                device_id, target_date
+            )
+
+            if result.error_message == "No energy stats found.":
+                # Try again.
+                attempts = attempts - 1
+                target_date = target_date - timedelta(hours=1)
+            else:
+                # It's either a success or an error message, return the ApiResponse.
+                return result
+
+        return ApiResponse(False, None, "Max tries exceeded.")
+
+    def _retrieve_hour_energy_stats(
+        self, device_id: str, target_date: datetime
+    ) -> ApiResponse:
+        if not self._ensure_valid_auth():
+            return ApiResponse(False, None, "Invalid authentication.")
+
+        # Sample URL /history_statistics/device_id/daily/2022/01/21/energy/010000.json
+        args = {"auth": self.auth_token}
+        url = "{}{}{}/energy/{}0000.json".format(
+            FIREBASE_DEFAULT_URL,
+            FIREBASE_DEVICE_ENERGY_PATH_BY_ID.format(device_id),
+            target_date.strftime("%Y/%m/%d"),
+            target_date.strftime("%H"),
+        )
+
+        response = requests.get(url, params=args)
+
+        if not response:
+            return ApiResponse(
+                False, "No response from API in _retrieve_hour_energy_stats()"
+            )
+
+        if response.status_code != 200:
+            return ApiResponse(
+                False,
+                None,
+                f"_retrieve_hour_energy_stats() returned {response.status_code}",
+            )
+
+        response_json = response.json()
+
+        if not response_json or len(response_json) == 0:
+            return ApiResponse(False, None, "No energy stats found.")
+
+        data = EnergyConsumptionData(
+            created=datetime.now,
+            start=target_date,
+            end=target_date + timedelta(hours=1),
+            kwh=float(response_json["kw_h"]),
+            effective_power=float(response_json["effective_power"]),
+        )
+
+        return ApiResponse(True, data, None)
 
     def set_device_temp(self, device: RointeDevice, new_temp: float) -> bool:
         """Set the device target temperature."""
