@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import requests
+from requests.exceptions import RequestException
 
 from typing import Any, Dict, Optional
 from collections import namedtuple
@@ -40,18 +41,18 @@ class RointeAPI:
         self.auth_token = None
         self.auth_token_expire_date = None
 
-    def initialize_authentication(self) -> str:
+    def initialize_authentication(self) -> ApiResponse:
         """
         Initializes the refresh token and cleans
         the original credentials.
         """
 
-        login_data = self._login_user()
+        login_data: ApiResponse = self._login_user()
 
         if not login_data.success:
             self.auth_token = None
             self.refresh_token = None
-            return login_data.error_message
+            return login_data
 
         self.auth_token = login_data.data["auth_token"]
         self.refresh_token = login_data.data["refresh_token"]
@@ -59,7 +60,7 @@ class RointeAPI:
 
         self._clean_credentials()
 
-        return None
+        return ApiResponse(True, None, None)
 
     def _clean_credentials(self):
         """Cleans authentication values"""
@@ -88,11 +89,14 @@ class RointeAPI:
 
         payload = {"grant_type": "refresh_token", "refresh_token": self.refresh_token}
 
-        response = requests.post(
-            f"{AUTH_REFRESH_ENDPOINT}?key={FIREBASE_APP_KEY}",
-            data=payload,
-            timeout=AUTH_TIMEOUT_SECONDS,
-        )
+        try:
+            response = requests.post(
+                f"{AUTH_REFRESH_ENDPOINT}?key={FIREBASE_APP_KEY}",
+                data=payload,
+                timeout=AUTH_TIMEOUT_SECONDS,
+            )
+        except RequestException as e:
+            return ApiResponse(False, None, f"Network error {e}")
 
         if not response:
             return False
@@ -128,8 +132,8 @@ class RointeAPI:
                 data=payload,
                 timeout=AUTH_TIMEOUT_SECONDS,
             )
-        except requests.exceptions.RequestException:
-            return ApiResponse(False, None, "cannot_connect")
+        except RequestException as e:
+            return ApiResponse(False, None, f"Network error {e}")
 
         if response.status_code == 400:
             return ApiResponse(
@@ -167,10 +171,13 @@ class RointeAPI:
 
         payload = {"idToken": self.auth_token}
 
-        response = requests.post(
-            f"{AUTH_HOST}{AUTH_ACCT_INFO_URL}?key={FIREBASE_APP_KEY}",
-            data=payload,
-        )
+        try:
+            response = requests.post(
+                f"{AUTH_HOST}{AUTH_ACCT_INFO_URL}?key={FIREBASE_APP_KEY}",
+                data=payload,
+            )
+        except RequestException as e:
+            return ApiResponse(False, None, f"Network error {e}")
 
         if not response:
             return ApiResponse(
@@ -202,7 +209,10 @@ class RointeAPI:
 
         url = f"{FIREBASE_DEFAULT_URL}{FIREBASE_INSTALLATIONS_PATH}"
 
-        response = requests.get(url, params=args)
+        try:
+            response = requests.get(url, params=args)
+        except RequestException as e:
+            return ApiResponse(False, None, f"Network error {e}")
 
         if not response:
             return ApiResponse(
@@ -234,7 +244,10 @@ class RointeAPI:
         }
         url = f"{FIREBASE_DEFAULT_URL}{FIREBASE_INSTALLATIONS_PATH}"
 
-        response = requests.get(url, params=args)
+        try:
+            response = requests.get(url, params=args)
+        except RequestException as e:
+            return ApiResponse(False, None, f"Network error {e}")
 
         if not response:
             return ApiResponse(False, "No response from API in get_installations()")
@@ -264,12 +277,15 @@ class RointeAPI:
 
         args = {"auth": self.auth_token}
 
-        response = requests.get(
-            "{}{}".format(
-                FIREBASE_DEFAULT_URL, FIREBASE_DEVICES_PATH_BY_ID.format(device_id)
-            ),
-            params=args,
-        )
+        try:
+            response = requests.get(
+                "{}{}".format(
+                    FIREBASE_DEFAULT_URL, FIREBASE_DEVICES_PATH_BY_ID.format(device_id)
+                ),
+                params=args,
+            )
+        except RequestException as e:
+            return ApiResponse(False, None, f"Network error {e}")
 
         if not response:
             return ApiResponse(False, "No response from API in get_device()")
@@ -323,7 +339,10 @@ class RointeAPI:
             target_date.strftime("%H"),
         )
 
-        response = requests.get(url, params=args)
+        try:
+            response = requests.get(url, params=args)
+        except RequestException as e:
+            return ApiResponse(False, None, f"Network error {e}")
 
         if not response:
             return ApiResponse(
@@ -484,11 +503,14 @@ class RointeAPI:
 
         body["last_sync_datetime_app"] = round(datetime.now().timestamp() * 1000)
 
-        response = requests.patch(
-            url,
-            params=params,
-            json=body,
-        )
+        try:
+            response = requests.patch(
+                url,
+                params=params,
+                json=body,
+            )
+        except RequestException as e:
+            return ApiResponse(False, None, f"Network error {e}")
 
         if not response:
             return ApiResponse(False, None, None)

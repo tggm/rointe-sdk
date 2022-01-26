@@ -65,6 +65,8 @@ class RointeDevice:
     last_sync_datetime_app: datetime
     last_sync_datetime_device: datetime
 
+    hass_available: bool
+
     def __init__(
         self, device_id: str, device_info: dict, energy_data: EnergyConsumptionData
     ) -> None:
@@ -119,6 +121,8 @@ class RointeDevice:
         self.last_sync_datetime_device = datetime.fromtimestamp(
             int(data["last_sync_datetime_device"]) / 1000.0
         )
+
+        self.hass_available = True
 
     def get_current_schedule_mode(self) -> ScheduleMode:
         """Return the current schedule mode for the device.
