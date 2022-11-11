@@ -7,7 +7,10 @@ from requests.exceptions import RequestException
 from typing import Any, Dict, Optional
 from collections import namedtuple
 from datetime import datetime, timedelta
-from .device import RointeDevice, ScheduleMode
+from packaging import version
+
+from rointesdk.utils import find_max_fw_version
+from .device import DeviceFirmware, RointeDevice, ScheduleMode
 from .dto import EnergyConsumptionData
 
 from .settings import (
@@ -22,6 +25,7 @@ from .settings import (
     FIREBASE_DEVICE_DATA_PATH_BY_ID,
     FIREBASE_DEVICE_ENERGY_PATH_BY_ID,
     FIREBASE_DEVICES_PATH_BY_ID,
+    FIREBASE_GLOBAL_SETTINGS_PATH,
     FIREBASE_INSTALLATIONS_PATH,
 )
 
@@ -230,6 +234,45 @@ class RointeAPI:
             return ApiResponse(False, None, "No Rointe installation found.")
 
         return ApiResponse(True, reponse_json[installation_id], None)
+
+
+    def get_latest_firmware(self) -> ApiResponse:
+        """Retrieves the latest firmware available for each device type"""
+
+        if not self._ensure_valid_auth():
+            return ApiResponse(False, None, "Invalid authentication.")
+
+        url = f"{FIREBASE_GLOBAL_SETTINGS_PATH}"
+
+        try:
+            response = requests.get(url)
+        except RequestException as e:
+            return ApiResponse(False, None, f"Network error {e}")
+
+        if not response:
+            return ApiResponse(False, "No response from API in get_latest_firmware()")
+
+        if response.status_code != 200:
+            return ApiResponse(
+                False, None, f"get_latest_firmware() returned {response.status_code}"
+            )
+
+        data = response.json()
+
+        if len(data) == 0:
+            return ApiResponse(False, None, "Global Settings is empty.")
+
+        firmware_map = {
+            DeviceFirmware.RADIATOR_V1: find_max_fw_version("radiator", "v1"),
+            DeviceFirmware.RADIATOR_V2: find_max_fw_version("radiator", "v2"),
+            DeviceFirmware.TOWEL_RAIL_V1: find_max_fw_version("towel", "v1"),
+            DeviceFirmware.TOWEL_RAIL_V2: find_max_fw_version("towel", "v2"),
+            DeviceFirmware.WATER_HEATER_V1: find_max_fw_version("acs", "v1"),
+            DeviceFirmware.WATER_HEATER_V2: find_max_fw_version("acs", "v2"),
+            DeviceFirmware.THERMO_V2: find_max_fw_version("radiator", "v2"),
+        }
+
+        return ApiResponse(True, firmware_map, None)
 
     def get_installations(self, local_id: str) -> ApiResponse:
         """Retrieve the client's installations."""

@@ -9,6 +9,17 @@ from . import utils
 from .dto import EnergyConsumptionData
 
 
+class DeviceFirmware(Enum):
+    """Device firmware model"""
+    RADIATOR_V1 = "Radiator v1"
+    RADIATOR_V2 = "Radiator v2"
+    TOWEL_RAIL_V1 = "Towel v1"
+    TOWEL_RAIL_V2 = "Towel v2"
+    WATER_HEATER_V1 = "Water Heater v1"
+    WATER_HEATER_V2 = "Water Heater v2"
+    THERMO_V2 = "Thermostat V2"
+
+
 class DeviceMode(Enum):
     """Device working mode."""
 
@@ -32,6 +43,7 @@ class RointeDevice:
     serialnumber: str
     type: str
     product_version: str
+    firmware_version: str
 
     nominal_power: int
     power: bool
@@ -121,6 +133,11 @@ class RointeDevice:
         self.last_sync_datetime_device = datetime.fromtimestamp(
             int(data["last_sync_datetime_device"]) / 1000.0
         )
+
+        if "firmware" in data and "firmware_version_device" in data["firmware"]:
+            self.firmware_version = data["firmware"]["firmware_version_device"]
+        else:
+            self.firmware_version = "N/A 2"
 
         self.hass_available = True
 
