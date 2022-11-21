@@ -11,6 +11,7 @@ from .dto import EnergyConsumptionData
 
 class DeviceFirmware(Enum):
     """Device firmware model"""
+
     RADIATOR_V1 = "Radiator v1"
     RADIATOR_V2 = "Radiator v2"
     TOWEL_RAIL_V1 = "Towel v1"
@@ -134,10 +135,13 @@ class RointeDevice:
             int(data["last_sync_datetime_device"]) / 1000.0
         )
 
-        if "firmware" in data and "firmware_version_device" in data["firmware"]:
-            self.firmware_version = data["firmware"]["firmware_version_device"]
+        if (
+            "firmware" in device_info
+            and "firmware_version_device" in device_info["firmware"]
+        ):
+            self.firmware_version = device_info["firmware"]["firmware_version_device"]
         else:
-            self.firmware_version = "N/A 2"
+            self.firmware_version = "N/A"
 
         self.hass_available = True
 
