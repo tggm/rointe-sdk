@@ -7,7 +7,6 @@ from requests.exceptions import RequestException
 from typing import Any, Dict, Optional
 from collections import namedtuple
 from datetime import datetime, timedelta
-from packaging import version
 
 from rointesdk.utils import find_max_fw_version
 from .device import DeviceFirmware, RointeDevice, ScheduleMode
@@ -33,7 +32,7 @@ ApiResponse = namedtuple("ApiResponse", ["success", "data", "error_message"])
 
 
 class RointeAPI:
-    """Rointe API"""
+    """Rointe API Communication. Handles low level calls to the API."""
 
     def __init__(self, username: str, password: str):
         """Initializes the API"""
@@ -234,7 +233,6 @@ class RointeAPI:
             return ApiResponse(False, None, "No Rointe installation found.")
 
         return ApiResponse(True, reponse_json[installation_id], None)
-
 
     def get_latest_firmware(self) -> ApiResponse:
         """Retrieves the latest firmware available for each device type"""

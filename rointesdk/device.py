@@ -1,4 +1,4 @@
-"""Rointe app data model."""
+"""Rointe data model."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ from .dto import EnergyConsumptionData
 
 
 class DeviceFirmware(Enum):
-    """Device firmware model"""
+    """Device firmware classes"""
     RADIATOR_V1 = "Radiator v1"
     RADIATOR_V2 = "Radiator v2"
     TOWEL_RAIL_V1 = "Towel v1"
@@ -21,15 +21,13 @@ class DeviceFirmware(Enum):
 
 
 class DeviceMode(Enum):
-    """Device working mode."""
-
+    """Device working modes."""
     AUTO = "auto"
     MAN = "manual"
 
 
 class ScheduleMode(Enum):
-    """Schedule mode."""
-
+    """Radiator schedule modes."""
     COMFORT = "C"
     ECO = "E"
     NONE = "O"
@@ -44,6 +42,7 @@ class RointeDevice:
     type: str
     product_version: str
     firmware_version: str
+    new_firmware_available_version: str
 
     nominal_power: int
     power: bool
