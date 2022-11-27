@@ -240,10 +240,14 @@ class RointeAPI:
         if not self._ensure_valid_auth():
             return ApiResponse(False, None, "Invalid authentication.")
 
-        url = f"{FIREBASE_GLOBAL_SETTINGS_PATH}"
+        url = f"{FIREBASE_DEFAULT_URL}{FIREBASE_GLOBAL_SETTINGS_PATH}"
+        args = {"auth": self.auth_token}
 
         try:
-            response = requests.get(url)
+            response = requests.get(
+                url,
+                params=args,
+            )
         except RequestException as e:
             return ApiResponse(False, None, f"Network error {e}")
 
@@ -261,13 +265,13 @@ class RointeAPI:
             return ApiResponse(False, None, "Global Settings is empty.")
 
         firmware_map = {
-            DeviceFirmware.RADIATOR_V1: find_max_fw_version("radiator", "v1"),
-            DeviceFirmware.RADIATOR_V2: find_max_fw_version("radiator", "v2"),
-            DeviceFirmware.TOWEL_RAIL_V1: find_max_fw_version("towel", "v1"),
-            DeviceFirmware.TOWEL_RAIL_V2: find_max_fw_version("towel", "v2"),
-            DeviceFirmware.WATER_HEATER_V1: find_max_fw_version("acs", "v1"),
-            DeviceFirmware.WATER_HEATER_V2: find_max_fw_version("acs", "v2"),
-            DeviceFirmware.THERMO_V2: find_max_fw_version("radiator", "v2"),
+            DeviceFirmware.RADIATOR_V1: find_max_fw_version(data, "radiator", "v1"),
+            DeviceFirmware.RADIATOR_V2: find_max_fw_version(data, "radiator", "v2"),
+            DeviceFirmware.TOWEL_RAIL_V1: find_max_fw_version(data, "towel", "v1"),
+            DeviceFirmware.TOWEL_RAIL_V2: find_max_fw_version(data, "towel", "v2"),
+            DeviceFirmware.WATER_HEATER_V1: find_max_fw_version(data, "acs", "v1"),
+            DeviceFirmware.WATER_HEATER_V2: find_max_fw_version(data, "acs", "v2"),
+            DeviceFirmware.THERMO_V2: find_max_fw_version(data, "radiator", "v2"),
         }
 
         return ApiResponse(True, firmware_map, None)
@@ -498,7 +502,9 @@ class RointeAPI:
                 return self._send_patch_request(url, args, body)
 
         elif hvac_mode == "heat":
-            set_mode_response = self._send_patch_request(url, args, {"temp": device.comfort_temp})
+            set_mode_response = self._send_patch_request(
+                url, args, {"temp": device.comfort_temp}
+            )
 
             if not set_mode_response.success:
                 return set_mode_response

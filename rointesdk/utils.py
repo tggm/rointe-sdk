@@ -1,5 +1,6 @@
 """Utility methods"""
 import datetime as dt
+from packaging import version
 
 DEFAULT_TIME_ZONE: dt.tzinfo = dt.timezone.utc
 
@@ -9,12 +10,15 @@ def now(time_zone=None) -> dt.datetime:
     return dt.datetime.now(time_zone or DEFAULT_TIME_ZONE)
 
 
-def find_max_fw_version(data, device_class: str, version: str) -> str:
+def find_max_fw_version(data, device_class: str, product_version: str) -> str | None:
     """Finds the latest FW version for a specific device class and version"""
 
     if device_class in data:
-        if version in data[device_class] and "end_user" in data[device_class][version]:
-            root = data[device_class][version]["end_user"]
+        if (
+            product_version in data[device_class]
+            and "end_user" in data[device_class][product_version]
+        ):
+            root = data[device_class][product_version]["end_user"]
 
             max_version = None
 
@@ -23,6 +27,6 @@ def find_max_fw_version(data, device_class: str, version: str) -> str:
                 if max_version is None or ptr > max_version:
                     max_version = ptr
 
-            return max_version
+            return str(max_version)
 
     return None
