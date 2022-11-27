@@ -1,10 +1,7 @@
 # Changelog 
 
-
-- v1.1.0-RC
+- v1.0.10
   - Retrieve firmware versions by device
-- v1.0.10 (RC)
-  - Added firmware information.
 - v1.0.9b1
   - Handle erros in communication with the API.
 - v1.0.8

@@ -271,7 +271,7 @@ class RointeAPI:
             DeviceFirmware.TOWEL_RAIL_V2: find_max_fw_version(data, "towel", "v2"),
             DeviceFirmware.WATER_HEATER_V1: find_max_fw_version(data, "acs", "v1"),
             DeviceFirmware.WATER_HEATER_V2: find_max_fw_version(data, "acs", "v2"),
-            DeviceFirmware.THERMO_V2: find_max_fw_version(data, "radiator", "v2"),
+            DeviceFirmware.THERMO_V2: find_max_fw_version(data, "therm", "v2"),
         }
 
         return ApiResponse(True, firmware_map, None)
