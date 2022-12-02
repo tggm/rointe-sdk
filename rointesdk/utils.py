@@ -24,8 +24,8 @@ def find_max_fw_version(data, device_class: str, product_version: str) -> str | 
 
             for entry in root:
                 ptr = version.parse(entry)
-                if max_version is None or ptr > max_version:
-                    max_version = ptr
+                max_version = ptr if max_version is None or ptr > max_version
+                    
 
             return str(max_version)
 
