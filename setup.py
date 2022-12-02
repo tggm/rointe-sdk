@@ -16,6 +16,7 @@ with open("README.md", encoding="utf-8") as fh:
 setup(
     name="rointe-sdk",
     version="1.0.10",
+    author="tggm"
     description="Python SDK for rointeconnect.com",
     long_description=doc_long_description,
     long_description_content_type="text/markdown",
