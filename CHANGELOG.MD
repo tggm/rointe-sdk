@@ -1,4 +1,6 @@
 # Changelog 
+- v1.2.2
+  - Version bump
 - v1.2.1
   - Packaging lib update
 - v1.2.0

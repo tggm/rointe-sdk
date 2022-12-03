@@ -8,6 +8,7 @@ class RointeProduct(Enum):
     """Device Models and Versions enum"""
 
     def __init__(self, product_name: str, device_type: str, version: str):
+        """Initializes the enum."""
         self.product_name = product_name
         self.device_type = device_type
         self.version = version

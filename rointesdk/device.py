@@ -152,4 +152,5 @@ class RointeDevice:
 
     @property
     def rointe_product(self) -> RointeProduct | None:
+        """Return the product name."""
         return get_product_by_type_version(self.type, self.product_version)
