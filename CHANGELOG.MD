@@ -1,5 +1,9 @@
 # Changelog 
-
+- v1.2.1
+  - Packaging lib update
+- v1.2.0
+  - Code refactoring
+  - Improved firmware update detection
 - v1.0.10
   - Retrieve firmware versions by device
 - v1.0.9b1

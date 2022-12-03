@@ -1,39 +1,13 @@
-"""Rointe data model."""
+"""Device data model."""
 
 from __future__ import annotations
-
 from datetime import datetime
-from enum import Enum
 
-from . import utils
+from rointesdk.utils import get_product_by_type_version
+
+from .model import ScheduleMode, RointeProduct
 from .dto import EnergyConsumptionData
-
-
-class DeviceFirmware(Enum):
-    """Device firmware classes"""
-
-    RADIATOR_V1 = "Radiator v1"
-    RADIATOR_V2 = "Radiator v2"
-    TOWEL_RAIL_V1 = "Towel v1"
-    TOWEL_RAIL_V2 = "Towel v2"
-    WATER_HEATER_V1 = "Water Heater v1"
-    WATER_HEATER_V2 = "Water Heater v2"
-    THERMO_V2 = "Thermostat V2"
-
-
-class DeviceMode(Enum):
-    """Device working modes."""
-
-    AUTO = "auto"
-    MAN = "manual"
-
-
-class ScheduleMode(Enum):
-    """Radiator schedule modes."""
-
-    COMFORT = "C"
-    ECO = "E"
-    NONE = "O"
+from . import utils
 
 
 class RointeDevice:
@@ -175,3 +149,7 @@ class RointeDevice:
     def user_mode_supported(self) -> bool:
         """Return True if this device supports user mode."""
         return self.product_version == "v2"
+
+    @property
+    def rointe_product(self) -> RointeProduct | None:
+        return get_product_by_type_version(self.type, self.product_version)
