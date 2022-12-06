@@ -1,4 +1,7 @@
 # Changelog 
+- v1.2.4
+  - Python update to 3.10
+  - Minor corrections
 - v1.2.2
   - Version bump
 - v1.2.1

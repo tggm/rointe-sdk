@@ -547,7 +547,7 @@ class RointeAPI:
                 json=body,
             )
         except RequestException as e:
-            return ApiResponse(False, None, f"Network error {e}")
+            return ApiResponse(False, None, f"Communications error {e}")
 
         if not response:
             return ApiResponse(False, None, None)
