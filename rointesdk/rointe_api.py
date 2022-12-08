@@ -406,6 +406,48 @@ class RointeAPI:
 
         return ApiResponse(True, data, None)
 
+    def set_device_eco_temp_preset(self, device: RointeDevice, new_temp: float) -> ApiResponse:
+        """Set the device's Eco temperature preset."""
+
+        if not self._ensure_valid_auth():
+            return ApiResponse(False, None, "Invalid authentication.")
+
+        device_id = device.id
+        args = {"auth": self.auth_token}
+
+        url = "{}{}".format(
+            FIREBASE_DEFAULT_URL, FIREBASE_DEVICE_DATA_PATH_BY_ID.format(device_id)
+        )
+
+        # If the device is in ECO mode then we need to also set the new temperature.
+        if device.power and device.preset == "eco":
+            body = {"temp": new_temp, "eco": new_temp}
+        else:
+            body = {"eco": new_temp}
+
+        return self._send_patch_request(url, args, body)
+
+    def set_device_comfort_temp_preset(self, device: RointeDevice, new_temp: float) -> ApiResponse:
+        """Set the device's Comfort temperature preset."""
+
+        if not self._ensure_valid_auth():
+            return ApiResponse(False, None, "Invalid authentication.")
+
+        device_id = device.id
+        args = {"auth": self.auth_token}
+
+        url = "{}{}".format(
+            FIREBASE_DEFAULT_URL, FIREBASE_DEVICE_DATA_PATH_BY_ID.format(device_id)
+        )
+
+        # If the device is in Comfort mode then we need to also set the new temperature.
+        if device.power and device.preset == "comfort":
+            body = {"temp": new_temp, "comfort": new_temp}
+        else:
+            body = {"comfort": new_temp}
+
+        return self._send_patch_request(url, args, body)
+
     def set_device_temp(self, device: RointeDevice, new_temp: float) -> ApiResponse:
         """Set the device target temperature."""
 
@@ -530,6 +572,26 @@ class RointeAPI:
         else:
             return ApiResponse(False, None, f"Invalid HVAC Mode {hvac_mode}.")
 
+    def set_screen_options(self, device_id: str, brightness_on: int, brightness_standby: int, screen_color_hex: str) -> ApiResponse:
+        """Set the device target temperature."""
+
+        if not self._ensure_valid_auth():
+            return ApiResponse(False, None, "Invalid authentication.")
+
+        device_id = device_id
+        args = {"auth": self.auth_token}
+        body = {
+            "backlight_on": brightness_on,
+            "backlight": brightness_standby,
+            "color": screen_color_hex
+        }
+
+        url = "{}{}".format(
+            FIREBASE_DEFAULT_URL, FIREBASE_DEVICE_DATA_PATH_BY_ID.format(device_id)
+        )
+
+        return self._send_patch_request(url, args, body)
+
     def _send_patch_request(
         self,
         url: str,
@@ -550,9 +612,9 @@ class RointeAPI:
             return ApiResponse(False, None, f"Network error {e}")
 
         if not response:
-            return ApiResponse(False, None, None)
+            return ApiResponse(False, None, "No response received.")
 
         if response.status_code != 200:
-            return ApiResponse(False, None, None)
+            return ApiResponse(False, None, f"Response code was: {response.status_code}")
 
         return ApiResponse(True, None, None)

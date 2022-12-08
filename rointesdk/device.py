@@ -58,6 +58,14 @@ class RointeDevice:
 
     hass_available: bool
 
+    #extra props
+    brightness_setting_supported: bool
+    brightness_standby: int
+    brightness_on: int
+
+    screen_color_supported: bool
+    screen_color_hex: str
+
     def __init__(
         self,
         device_id: str,
@@ -127,6 +135,18 @@ class RointeDevice:
 
         self.latest_firmware_version = latest_fw
         self.hass_available = True
+
+        # Extra attributes that might not exist on all devices.
+        self.brightness_setting_supported = "backlight" in data and "backlight_on" in data
+
+        if self.brightness_setting_supported:
+            self.brightness_standby = data["backlight"]
+            self.brightness_on = data["backlight_on"]
+
+        self.screen_color_supported = "color" in data
+
+        if self.screen_color_supported:
+            self.screen_color_hex = data["color"]
 
     def get_current_schedule_mode(self) -> ScheduleMode:
         """Return the current schedule mode for the device.
