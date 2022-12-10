@@ -1,4 +1,6 @@
 """Utility methods"""
+from __future__ import annotations
+
 import datetime as dt
 from packaging import version
 from .model import RointeProduct
@@ -33,7 +35,7 @@ def find_max_fw_version(data, device_class: str, product_version: str) -> str | 
     return None
 
 
-def build_update_map(firmware_data: dict) -> dict[str, dict[str, str]]:
+def build_update_map(firmware_data: dict) -> dict[RointeProduct, dict[str, str]]:
     """
     Builds an update map for each device.
 
@@ -45,7 +47,7 @@ def build_update_map(firmware_data: dict) -> dict[str, dict[str, str]]:
     fw_map = {}
 
     for entry in RointeProduct:
-        fw_map[entry.name] = build_product_fw_map(entry, firmware_data)
+        fw_map[entry] = build_product_fw_map(entry, firmware_data)
 
     return fw_map
 
@@ -69,7 +71,7 @@ def build_product_fw_map(product: RointeProduct, firmware_data: dict) -> dict[st
         new_version = product_versions[version_entry].get("firmware_new_version", None)
 
         if new_version:
-            upgrade_map[version] = new_version
+            upgrade_map[version_entry] = new_version
 
     return upgrade_map
 
