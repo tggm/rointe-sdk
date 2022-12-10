@@ -1,4 +1,9 @@
 # Changelog 
+- v1.2.5-1 
+  - Fixed error in determining the latest FW available
+- v1.2.5 
+  - Login now returns localID
+  - Method get_local_id no longer required.
 - v1.2.4
   - Python update to 3.10
   - Minor corrections

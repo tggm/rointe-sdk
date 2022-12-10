@@ -43,6 +43,7 @@ class RointeAPI:
         self.refresh_token = None
         self.auth_token = None
         self.auth_token_expire_date = None
+        self.local_id = None
 
     def initialize_authentication(self) -> ApiResponse:
         """
@@ -60,6 +61,7 @@ class RointeAPI:
         self.auth_token = login_data.data["auth_token"]
         self.refresh_token = login_data.data["refresh_token"]
         self.auth_token_expire_date = login_data.data["expires"]
+        self.local_id = login_data.data["local_id"]
 
         self._clean_credentials()
 
@@ -142,26 +144,27 @@ class RointeAPI:
             return ApiResponse(
                 False,
                 None,
-                "invalid_auth",
+                "Authentication returned 400 (Bad Request)",
             )
 
         if response.status_code != 200:
             return ApiResponse(
-                False,
-                None,
-                "response_invalid",
+                False, None, "Authentication returned: " + str(response.status_code)
             )
 
         response_json = response.json()
 
         if not response_json or "idToken" not in response_json:
-            return ApiResponse(False, None, "invalid_auth_response")
+            return ApiResponse(
+                False, None, "Authentication returned invalid or empty response"
+            )
 
         data = {
             "auth_token": response_json["idToken"],
             "expires": datetime.now()
             + timedelta(seconds=int(response_json["expiresIn"])),
             "refresh_token": response_json["refreshToken"],
+            "local_id": response_json["localId"],
         }
 
         return ApiResponse(True, data, None)
@@ -196,9 +199,7 @@ class RointeAPI:
 
         return ApiResponse(True, response_json["users"][0]["localId"], None)
 
-    def get_installation_by_id(
-        self, installation_id: str, local_id: str
-    ) -> ApiResponse:
+    def get_installation_by_id(self, installation_id: str) -> ApiResponse:
         """Retrieve a specific installation by ID."""
 
         if not self._ensure_valid_auth():
@@ -207,7 +208,7 @@ class RointeAPI:
         args = {
             "auth": self.auth_token,
             "orderBy": '"userid"',
-            "equalTo": f'"{local_id}"',
+            "equalTo": f'"{self.local_id}"',
         }
 
         url = f"{FIREBASE_DEFAULT_URL}{FIREBASE_INSTALLATIONS_PATH}"
@@ -266,7 +267,7 @@ class RointeAPI:
 
         return ApiResponse(True, build_update_map(data), None)
 
-    def get_installations(self, local_id: str) -> ApiResponse:
+    def get_installations(self) -> ApiResponse:
         """Retrieve the client's installations."""
 
         if not self._ensure_valid_auth():
@@ -275,7 +276,7 @@ class RointeAPI:
         args = {
             "auth": self.auth_token,
             "orderBy": '"userid"',
-            "equalTo": f'"{local_id}"',
+            "equalTo": f'"{self.local_id}"',
         }
         url = f"{FIREBASE_DEFAULT_URL}{FIREBASE_INSTALLATIONS_PATH}"
 
