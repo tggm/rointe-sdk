@@ -4,7 +4,7 @@ from __future__ import annotations
 import requests
 from requests.exceptions import RequestException
 
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, List
 from collections import namedtuple
 from datetime import datetime, timedelta
 
@@ -198,6 +198,41 @@ class RointeAPI:
         response_json = response.json()
 
         return ApiResponse(True, response_json["users"][0]["localId"], None)
+
+    def get_installation_devices(self, installation_id: str) -> ApiResponse:
+        """Retrieve all devices present in an installation."""
+        installation_response = self.get_installation_by_id(installation_id)
+
+        if not installation_response.success:
+            return ApiResponse
+
+        detected_devices: List[str] = []
+
+        for zone_key in installation_response.data["zones"]:
+            detected_devices.extend(
+                self._extract_devices(
+                    installation_response.data["zones"].get(zone_key)))
+
+        return ApiResponse(True, detected_devices, None)
+
+    def _extract_devices(self, zone_data: dict[str, Any]) -> List[str]:
+        """Parses a single zone block recursively."""
+
+        if not zone_data:
+            return []
+
+        zone_devices: List[str] = []
+
+        if devices := zone_data.get("devices"):
+            zone_devices.extend(list(devices.keys()))
+
+        if sub_zones := zone_data.get("zones"):
+            for sub_zone_key in sub_zones:
+                zone_devices.extend(
+                    self._extract_devices(
+                        sub_zones.get(sub_zone_key)))
+
+        return zone_devices
 
     def get_installation_by_id(self, installation_id: str) -> ApiResponse:
         """Retrieve a specific installation by ID."""
