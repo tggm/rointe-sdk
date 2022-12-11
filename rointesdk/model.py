@@ -15,6 +15,7 @@ class RointeProduct(Enum):
 
     RADIATOR_V1 = "DeltaUltimate Radiator", "radiator", "v1"
     RADIATOR_V2 = "D-Series Radiator", "radiator", "v2"
+    RADIATOR_B_V2 = "Belize/Olympia Radiator", "radiatorb", "v2"
     TOWEL_RAIL_V1 = "Towel v1", "towel", "v1"
     TOWEL_RAIL_V2 = "Towel Rail", "towel", "v2"
     WATER_HEATER_V1 = "Water Heater v1", "acs", "v1"

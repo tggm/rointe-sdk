@@ -1,5 +1,7 @@
 # Changelog 
-- v1.2.5-1 
+- v1.2.5.2
+  - Added experimental support for Belize / Olympia radiators
+- v1.2.5.1
   - Fixed error in determining the latest FW available
 - v1.2.5 
   - Login now returns localID
