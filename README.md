@@ -20,3 +20,9 @@ Currently supported devices include:
 * Olympia radiators
 * Wi-Fi enabled towel rails
 * Thermostat
+
+
+## Contributions used
+* Portions from https://github.com/bachya/pypi-template
+* Portions from https://github.com/bachya/aiopurpleair
+

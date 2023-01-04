@@ -210,8 +210,8 @@ class RointeAPI:
 
         for zone_key in installation_response.data["zones"]:
             detected_devices.extend(
-                self._extract_devices(
-                    installation_response.data["zones"].get(zone_key)))
+                self._extract_devices(installation_response.data["zones"].get(zone_key))
+            )
 
         return ApiResponse(True, detected_devices, None)
 
@@ -228,9 +228,7 @@ class RointeAPI:
 
         if sub_zones := zone_data.get("zones"):
             for sub_zone_key in sub_zones:
-                zone_devices.extend(
-                    self._extract_devices(
-                        sub_zones.get(sub_zone_key)))
+                zone_devices.extend(self._extract_devices(sub_zones.get(sub_zone_key)))
 
         return zone_devices
 
@@ -487,7 +485,7 @@ class RointeAPI:
                 "temp": device.eco_temp,
                 "status": "eco",
             }
-        elif preset_mode == "Anti-frost":
+        elif preset_mode == "ice":
             body = {
                 "power": True,
                 "mode": "manual",
