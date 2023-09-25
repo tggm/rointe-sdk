@@ -21,6 +21,8 @@ class RointeProduct(Enum):
     WATER_HEATER_V1 = "Water Heater v1", "acs", "v1"
     WATER_HEATER_V2 = "Water Heater v2", "acs", "v2"
     THERMO_V2 = "Thermostat", "therm", "v2"
+    OVAL_TOWEL = "Oval Towel", "oval_towel", "v2"
+
 
 
 class DeviceMode(Enum):

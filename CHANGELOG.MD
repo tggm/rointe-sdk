@@ -1,4 +1,7 @@
-# Changelog 
+# Changelog
+
+- v1.4.0
+  - Added support for Oval Towel
 - v1.3.1
   - Fixed an error on the ICE preset name.
 - v1.3.0
@@ -7,7 +10,7 @@
   - Added experimental support for Belize / Olympia radiators
 - v1.2.5.1
   - Fixed error in determining the latest FW available
-- v1.2.5 
+- v1.2.5
   - Login now returns localID
   - Method get_local_id no longer required.
 - v1.2.4
