@@ -1,5 +1,7 @@
 # Changelog
 
+- v1.4.1
+  -Fixes wrong package name
 - v1.4.0
   - Added support for Oval Towel
 - v1.3.1
