@@ -7,7 +7,7 @@ repos:
         language: system
         types: [python]
         entry: poetry run bandit
-        files: ^rointe-sdk/
+        files: ^rointesdk/
         require_serial: true
       - id: black
         name: ☕️ Formatting code using black

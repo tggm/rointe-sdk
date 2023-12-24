@@ -1,11 +1,11 @@
 [tool.poetry]
 name = "rointe-sdk"
-version = "1.4.1"
+version = "1.4.3"
 description = "A python 3 library to interact with Rointe Devices"
 authors = []
 license = "MIT"
 readme = "README.md"
-packages = [{include = "rointe-sdk"}]
+packages = [{include = "rointesdk"}]
 repository = "https://github.com/tggm/rointe-sdk"
 
 [tool.poetry.dependencies]
@@ -31,11 +31,11 @@ fail_under = 0
 show_missing = true
 
 [tool.coverage.run]
-source = ["rointe-sdk"]
+source = ["rointesdk"]
 
 
 [tool.isort]
-known_first_party = "rointe-sdk,tests"
+known_first_party = "rointesdk,tests"
 multi_line_output = 3
 profile = "black"
 
