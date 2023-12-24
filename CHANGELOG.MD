@@ -1,5 +1,7 @@
 # Changelog
 
+- V1.5.0
+  - No changes. Version bump
 - v1.4.1
   -Fixes wrong package name
 - v1.4.0
