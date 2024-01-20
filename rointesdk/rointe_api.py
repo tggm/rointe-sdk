@@ -4,6 +4,7 @@ from __future__ import annotations
 import requests
 from requests.exceptions import RequestException
 
+from enum import Enum
 from typing import Any, Dict, Optional, List
 from collections import namedtuple
 from datetime import datetime, timedelta
@@ -19,22 +20,28 @@ from .settings import (
     AUTH_TIMEOUT_SECONDS,
     AUTH_VERIFY_URL,
     ENERGY_STATS_MAX_TRIES,
-    FIREBASE_APP_KEY,
+    CONNECT_FIREBASE_APP_KEY,
     FIREBASE_DEFAULT_URL,
     FIREBASE_DEVICE_DATA_PATH_BY_ID,
     FIREBASE_DEVICE_ENERGY_PATH_BY_ID,
     FIREBASE_DEVICES_PATH_BY_ID,
     FIREBASE_GLOBAL_SETTINGS_PATH,
-    FIREBASE_INSTALLATIONS_PATH,
+    CONNECT_FIREBASE_INSTALLATIONS_PATH,
+    LITE_FIREBASE_INSTALLATIONS_PATH,
 )
 
 ApiResponse = namedtuple("ApiResponse", ["success", "data", "error_message"])
 
+class ApiVersion(Enum):
+    """API Version"""
+
+    CONNECT = "connect"
+    LITE = "lite"
 
 class RointeAPI:
     """Rointe API Communication. Handles low level calls to the API."""
 
-    def __init__(self, username: str, password: str):
+    def __init__(self, username: str, password: str, version: ApiVersion = ApiVersion.CONNECT):
         """Initializes the API"""
 
         self.username = username
@@ -44,6 +51,7 @@ class RointeAPI:
         self.auth_token = None
         self.auth_token_expire_date = None
         self.local_id = None
+        self.api_version = version
 
     def initialize_authentication(self) -> ApiResponse:
         """
@@ -96,7 +104,7 @@ class RointeAPI:
 
         try:
             response = requests.post(
-                f"{AUTH_REFRESH_ENDPOINT}?key={FIREBASE_APP_KEY}",
+                f"{AUTH_REFRESH_ENDPOINT}?key={CONNECT_FIREBASE_APP_KEY}",
                 data=payload,
                 timeout=AUTH_TIMEOUT_SECONDS,
             )
@@ -133,7 +141,7 @@ class RointeAPI:
 
         try:
             response = requests.post(
-                f"{AUTH_HOST}{AUTH_VERIFY_URL}?key={FIREBASE_APP_KEY}",
+                f"{AUTH_HOST}{AUTH_VERIFY_URL}?key={CONNECT_FIREBASE_APP_KEY}",
                 data=payload,
                 timeout=AUTH_TIMEOUT_SECONDS,
             )
@@ -179,7 +187,7 @@ class RointeAPI:
 
         try:
             response = requests.post(
-                f"{AUTH_HOST}{AUTH_ACCT_INFO_URL}?key={FIREBASE_APP_KEY}",
+                f"{AUTH_HOST}{AUTH_ACCT_INFO_URL}?key={CONNECT_FIREBASE_APP_KEY}",
                 data=payload,
             )
         except RequestException as e:
@@ -244,7 +252,7 @@ class RointeAPI:
             "equalTo": f'"{self.local_id}"',
         }
 
-        url = f"{FIREBASE_DEFAULT_URL}{FIREBASE_INSTALLATIONS_PATH}"
+        url = f"{FIREBASE_DEFAULT_URL}{LITE_FIREBASE_INSTALLATIONS_PATH if self.api_version == ApiVersion.LITE else CONNECT_FIREBASE_INSTALLATIONS_PATH}"
 
         try:
             response = requests.get(url, params=args)
@@ -311,7 +319,7 @@ class RointeAPI:
             "orderBy": '"userid"',
             "equalTo": f'"{self.local_id}"',
         }
-        url = f"{FIREBASE_DEFAULT_URL}{FIREBASE_INSTALLATIONS_PATH}"
+        url = f"{FIREBASE_DEFAULT_URL}{LITE_FIREBASE_INSTALLATIONS_PATH if self.api_version == ApiVersion.LITE else CONNECT_FIREBASE_INSTALLATIONS_PATH}"
 
         try:
             response = requests.get(url, params=args)
