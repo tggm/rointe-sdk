@@ -99,16 +99,18 @@ class RointeDevice:
 
         # User mode settings are only valid for V2 radiators.
         if self.product_version == "v2":
-            self.um_max_temp = float(data["um_max_temp"])
-            self.um_min_temp = float(data["um_min_temp"])
-            self.user_mode = bool(data["user_mode"])
+            self.um_max_temp = float(data.get("um_max_temp", 0))
+            self.um_min_temp = float(data.get("um_min_temp", 0))
+            self.user_mode = bool(data.get("user_mode", False))
         else:
+            self.um_max_temp = 0
+            self.um_min_temp = 0
             self.user_mode = False
 
         self.ice_mode = bool(data["ice_mode"])
         self.schedule = data["schedule"]
-        self.schedule_day = data["schedule_day"]
-        self.schedule_hour = data["schedule_hour"]
+        self.schedule_day = data.get("schedule_day", 0)
+        self.schedule_hour = data.get("schedule_hour", 0)
 
         self.energy_data = energy_data
 
