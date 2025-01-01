@@ -1,5 +1,7 @@
 # Changelog
 
+- V1.5.1
+  - Fix support for CT.2 Thermostat #10
 - V1.5.0
   - No changes. Version bump
 - v1.4.1
