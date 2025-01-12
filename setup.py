@@ -3,7 +3,7 @@
 from setuptools import find_packages, setup
 
 
-def requirements():
+def requirements() -> list[str]:
     """Load requirements"""
     with open("requirements.txt") as fileobj:
         return [line.strip() for line in fileobj]
@@ -12,10 +12,9 @@ def requirements():
 with open("README.md", encoding="utf-8") as fh:
     doc_long_description = fh.read()
 
-# This call to setup() does all the work
 setup(
     name="rointe-sdk",
-    version="1.5.1",
+    version="1.6.0",
     author="tggm",
     description="Python SDK for rointeconnect.com",
     long_description=doc_long_description,

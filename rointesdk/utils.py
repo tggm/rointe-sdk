@@ -1,19 +1,23 @@
 """Utility methods"""
+
 from __future__ import annotations
 
 import datetime as dt
+from typing import Dict, Optional
+
 from packaging import version
+
 from .model import RointeProduct
 
 DEFAULT_TIME_ZONE: dt.tzinfo = dt.timezone.utc
 
 
-def now(time_zone=None) -> dt.datetime:
+def now(time_zone: Optional[dt.tzinfo] = None) -> dt.datetime:
     """Get now in specified time zone."""
     return dt.datetime.now(time_zone or DEFAULT_TIME_ZONE)
 
 
-def find_max_fw_version(data, device_class: str, product_version: str) -> str | None:
+def find_max_fw_version(data: Dict, device_class: str, product_version: str) -> str | None:
     """Finds the latest FW version for a specific device class and version"""
 
     if device_class in data:
@@ -35,7 +39,7 @@ def find_max_fw_version(data, device_class: str, product_version: str) -> str | 
     return None
 
 
-def build_update_map(firmware_data: dict) -> dict[RointeProduct, dict[str, str]]:
+def build_update_map(firmware_data: dict) -> dict[RointeProduct, Optional[dict[str, str]]]:
     """
     Builds an update map for each device.
 
@@ -44,7 +48,7 @@ def build_update_map(firmware_data: dict) -> dict[RointeProduct, dict[str, str]]
     Where [target_version] is the next version the product can be updated to.
     and [existing_verion] is the product's current version.
     """
-    fw_map = {}
+    fw_map: dict[RointeProduct, Optional[dict[str, str]]] = {}
 
     for entry in RointeProduct:
         fw_map[entry] = build_product_fw_map(entry, firmware_data)
@@ -52,7 +56,7 @@ def build_update_map(firmware_data: dict) -> dict[RointeProduct, dict[str, str]]
     return fw_map
 
 
-def build_product_fw_map(product: RointeProduct, firmware_data: dict) -> dict[str, str]:
+def build_product_fw_map(product: RointeProduct, firmware_data: dict) -> Optional[dict[str, str]]:
     """Builds the upgrade map for a specific product."""
 
     if product.device_type not in firmware_data:

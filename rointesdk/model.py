@@ -1,6 +1,7 @@
 """Data Model enumerations."""
 
 from __future__ import annotations
+
 from enum import Enum
 
 
@@ -22,7 +23,6 @@ class RointeProduct(Enum):
     WATER_HEATER_V2 = "Water Heater v2", "acs", "v2"
     THERMO_V2 = "Thermostat", "therm", "v2"
     OVAL_TOWEL = "Oval Towel", "oval_towel", "v2"
-
 
 
 class DeviceMode(Enum):

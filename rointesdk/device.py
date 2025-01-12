@@ -1,13 +1,15 @@
 """Device data model."""
 
 from __future__ import annotations
+
 from datetime import datetime
+from typing import Optional
 
 from rointesdk.utils import get_product_by_type_version
 
-from .model import ScheduleMode, RointeProduct
-from .dto import EnergyConsumptionData
 from . import utils
+from .dto import EnergyConsumptionData
+from .model import RointeProduct, ScheduleMode
 
 
 class RointeDevice:
@@ -21,8 +23,8 @@ class RointeDevice:
     # This represents the model of a particular product. Not the FW version.
     product_version: str
 
-    firmware_version: str
-    latest_firmware_version: str
+    firmware_version: Optional[str]
+    latest_firmware_version: Optional[str]
 
     nominal_power: int
     power: bool

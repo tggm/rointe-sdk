@@ -1,165 +1,34 @@
----
 repos:
-  - repo: local
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
     hooks:
-      - id: bandit
-        name: 🎰 Checking for vulnerabilities using bandit
-        language: system
-        types: [python]
-        entry: poetry run bandit
-        files: ^rointesdk/
-        require_serial: true
-      - id: black
-        name: ☕️ Formatting code using black
-        language: system
-        types: [python]
-        entry: poetry run black
-        require_serial: true
-      - id: check-ast
-        name: 🐍 Checking Python AST
-        language: system
-        types: [python]
-        entry: poetry run check-ast
-      - id: check-case-conflict
-        name: 🔠 Checking for case conflicts
-        language: system
-        entry: poetry run check-case-conflict
-      - id: check-docstring-first
-        name: ℹ️  Checking docstrings are first
-        language: system
-        types: [python]
-        entry: poetry run check-docstring-first
-      - id: check-executables-have-shebangs
-        name: 🧐 Checking that executables have shebangs
-        language: system
-        types: [text, executable]
-        entry: poetry run check-executables-have-shebangs
-        stages: [commit, push, manual]
-      - id: check-json
-        name: ｛ Checking JSON files
-        language: system
-        types: [json]
-        entry: poetry run check-json
-      - id: check-merge-conflict
-        name: 💥 Checking for merge conflicts
-        language: system
-        types: [text]
-        entry: poetry run check-merge-conflict
-      - id: check-symlinks
-        name: 🔗 Checking for broken symlinks
-        language: system
-        types: [symlink]
-        entry: poetry run check-symlinks
-      - id: check-toml
-        name: ✅ Checking TOML files
-        language: system
-        types: [toml]
-        entry: poetry run check-toml
-      - id: check-yaml
-        name: ✅ Checking YAML files
-        language: system
-        types: [yaml]
-        entry: poetry run check-yaml
-      - id: codespell
-        name: ✅ Checking code for misspellings
-        language: system
-        types: [text]
-        exclude: ^poetry\.lock$
-        entry: poetry run codespell
-      - id: debug-statements
-        name: 🪵 Checking for debug statements and imports (Python)
-        language: system
-        types: [python]
-        entry: poetry run debug-statement-hook
-      - id: detect-private-key
-        name: 🕵️  Detecting private keys
-        language: system
-        types: [text]
-        entry: poetry run detect-private-key
-      - id: end-of-file-fixer
-        name: 🔚 Checking end of files
-        language: system
-        types: [text]
-        entry: poetry run end-of-file-fixer
-        stages: [commit, push, manual]
-      - id: fix-byte-order-marker
-        name: 🚏 Checking UTF-8 byte order marker
-        language: system
-        types: [text]
-        entry: poetry run fix-byte-order-marker
-      - id: flake8
-        name: 👔 Enforcing style guide with flake8
-        language: system
-        types: [python]
-        entry: poetry run flake8
-        exclude: ^vulture_whitelist.py$
-        require_serial: true
-      - id: isort
-        name: 🔀 Sorting all imports with isort
-        language: system
-        types: [python]
-        entry: poetry run isort
-      - id: mypy
-        name: 🆎 Performing static type checking using mypy
-        language: system
-        types: [python]
-        entry: poetry run mypy
-        exclude: ^vulture_whitelist.py$
-        require_serial: true
-      - id: no-commit-to-branch
-        name: 🛑 Checking for commit to protected branch
-        language: system
-        entry: poetry run no-commit-to-branch
-        pass_filenames: false
-        always_run: true
-        args:
-          - --branch=dev
-          - --branch=main
-      - id: poetry
-        name: 📜 Checking pyproject with Poetry
-        language: system
-        entry: poetry check
-        pass_filenames: false
-        always_run: true
-      - id: pylint
-        name: 🌟 Starring code with pylint
-        language: system
-        types: [python]
-        entry: poetry run pylint
-        exclude: ^vulture_whitelist.py$
-      - id: pytest
-        name: 🧪 Running tests and test coverage with pytest
-        language: system
-        types: [python]
-        entry: poetry run pytest rointe-sdk tests
-        pass_filenames: false
-      - id: pyupgrade
-        name: 🆙 Checking for upgradable syntax with pyupgrade
-        language: system
-        types: [python]
-        entry: poetry run pyupgrade
-        args: [--py39-plus, --keep-runtime-typing]
       - id: trailing-whitespace
-        name: ✄  Trimming trailing whitespace
-        language: system
-        types: [text]
-        entry: poetry run trailing-whitespace-fixer
-        stages: [commit, push, manual]
-      - id: vulture
-        name: 🔍 Finding unused Python code with Vulture
-        language: system
-        types: [python]
-        entry: poetry run vulture vulture_whitelist.py
-        pass_filenames: false
-        require_serial: true
-      - id: yamllint
-        name: 🎗  Checking YAML files with yamllint
-        language: system
-        types: [yaml]
-        entry: poetry run yamllint
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+      - id: check-ast
 
-  - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: "v3.0.0-alpha.4"
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.14.1
     hooks:
-      - id: prettier
-        name: 💄 Ensuring files are prettier
+      - id: mypy
+        language_version: python3.13
+        additional_dependencies:
+          - types-requests
+
+  - repo: https://github.com/pycqa/flake8
+    rev: 7.1.1
+    hooks:
+      - id: flake8
+        additional_dependencies:
+          [
+            flake8-bugbear,
+            flake8-comprehensions,
+            "importlib_metadata",
+            flake8-pyproject,
+          ]
+
+  - repo: https://github.com/pre-commit/mirrors-isort
+    rev: v5.10.1
+    hooks:
+      - id: isort

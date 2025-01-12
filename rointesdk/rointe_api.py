@@ -1,17 +1,16 @@
 """Rointe API Client"""
+
 from __future__ import annotations
+
+from collections import namedtuple
+from datetime import datetime, timedelta
+from typing import Any, Dict, List, Optional
 
 import requests
 from requests.exceptions import RequestException
 
-from typing import Any, Dict, Optional, List
-from collections import namedtuple
-from datetime import datetime, timedelta
-
-from .utils import build_update_map
 from .device import RointeDevice, ScheduleMode
 from .dto import EnergyConsumptionData
-
 from .settings import (
     AUTH_ACCT_INFO_URL,
     AUTH_HOST,
@@ -27,6 +26,7 @@ from .settings import (
     FIREBASE_GLOBAL_SETTINGS_PATH,
     FIREBASE_INSTALLATIONS_PATH,
 )
+from .utils import build_update_map
 
 ApiResponse = namedtuple("ApiResponse", ["success", "data", "error_message"])
 
@@ -37,12 +37,12 @@ class RointeAPI:
     def __init__(self, username: str, password: str):
         """Initializes the API"""
 
-        self.username = username
-        self.password = password
+        self.username: Optional[str] = username
+        self.password: Optional[str] = password
 
         self.refresh_token = None
         self.auth_token = None
-        self.auth_token_expire_date = None
+        self.auth_token_expire_date: Optional[datetime] = None
         self.local_id = None
 
     def initialize_authentication(self) -> ApiResponse:
@@ -67,7 +67,7 @@ class RointeAPI:
 
         return ApiResponse(True, None, None)
 
-    def _clean_credentials(self):
+    def _clean_credentials(self) -> None:
         """Cleans authentication values"""
         self.username = None
         self.password = None
@@ -100,8 +100,8 @@ class RointeAPI:
                 data=payload,
                 timeout=AUTH_TIMEOUT_SECONDS,
             )
-        except RequestException as e:
-            return ApiResponse(False, None, f"Network error {e}")
+        except RequestException:
+            return False
 
         if not response:
             return False
@@ -204,7 +204,7 @@ class RointeAPI:
         installation_response = self.get_installation_by_id(installation_id)
 
         if not installation_response.success:
-            return ApiResponse
+            return installation_response
 
         detected_devices: List[str] = []
 
@@ -253,7 +253,7 @@ class RointeAPI:
 
         if not response:
             return ApiResponse(
-                False, "No response from API in get_installation_by_id()"
+                False, None, "No response from API in get_installation_by_id()"
             )
 
         if response.status_code != 200:
@@ -286,7 +286,9 @@ class RointeAPI:
             return ApiResponse(False, None, f"Network error {e}")
 
         if not response:
-            return ApiResponse(False, "No response from API in get_latest_firmware()")
+            return ApiResponse(
+                False, None, "No response from API in get_latest_firmware()"
+            )
 
         if response.status_code != 200:
             return ApiResponse(
@@ -319,7 +321,9 @@ class RointeAPI:
             return ApiResponse(False, None, f"Network error {e}")
 
         if not response:
-            return ApiResponse(False, "No response from API in get_installations()")
+            return ApiResponse(
+                False, None, "No response from API in get_installations()"
+            )
 
         if response.status_code != 200:
             return ApiResponse(
@@ -357,7 +361,7 @@ class RointeAPI:
             return ApiResponse(False, None, f"Network error {e}")
 
         if not response:
-            return ApiResponse(False, "No response from API in get_device()")
+            return ApiResponse(False, None, "No response from API in get_device()")
 
         if response.status_code != 200:
             return ApiResponse(
@@ -369,7 +373,7 @@ class RointeAPI:
     def get_latest_energy_stats(self, device_id: str) -> ApiResponse:
         """Retrieve the latest energy consumption values."""
 
-        result: EnergyConsumptionData
+        result: ApiResponse
         now = datetime.now()
 
         # Attempt to retrieve the latest value. If not found, go back one hour. Max 5 tries.
@@ -379,7 +383,7 @@ class RointeAPI:
         )  # Strip minutes, seconds and microseconds.
 
         while attempts > 0:
-            result: ApiResponse = self._retrieve_hour_energy_stats(
+            result = self._retrieve_hour_energy_stats(
                 device_id, target_date
             )
 
@@ -415,7 +419,7 @@ class RointeAPI:
 
         if not response:
             return ApiResponse(
-                False, "No response from API in _retrieve_hour_energy_stats()"
+                False, None, "No response from API in _retrieve_hour_energy_stats()"
             )
 
         if response.status_code != 200:
@@ -431,7 +435,7 @@ class RointeAPI:
             return ApiResponse(False, None, "No energy stats found.")
 
         data = EnergyConsumptionData(
-            created=datetime.now,
+            created=datetime.now(),
             start=target_date,
             end=target_date + timedelta(hours=1),
             kwh=float(response_json["kw_h"]),
@@ -568,9 +572,12 @@ class RointeAPI:
         self,
         url: str,
         params: Optional[Dict[str, Any]] = None,
-        body=None,
+        body: Optional[Dict] = None,
     ) -> ApiResponse:
         """Send a patch request."""
+
+        if not body:
+            body = {}
 
         body["last_sync_datetime_app"] = round(datetime.now().timestamp() * 1000)
 
