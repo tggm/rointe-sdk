@@ -253,7 +253,7 @@ class RointeAPI:
 
         if not response:
             return ApiResponse(
-                False, "No response from API in get_installation_by_id()"
+                False, None, "No response from API in get_installation_by_id()"
             )
 
         if response.status_code != 200:
